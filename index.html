@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>القرآن الكريم</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#10271e;
+  color:#292419;
+  font-family:Tahoma,Arial,sans-serif;
+}
+header{
+  background:#123b2b;
+  color:#e6c879;
+  text-align:center;
+  padding:22px 10px;
+  font-size:30px;
+  font-weight:bold;
+  border-bottom:3px solid #b99a50;
+}
+.container{width:min(950px,96%);margin:20px auto}
+.hidden{display:none!important}
+input,select{
+  width:100%;
+  padding:16px;
+  border:2px solid #b99a50;
+  border-radius:12px;
+  background:#fffdf4;
+  color:#222;
+  font-size:18px;
+  margin-bottom:14px;
+}
+button{
+  cursor:pointer;
+  font-family:inherit;
+  border:0;
+  border-radius:10px;
+  padding:13px 19px;
+  font-size:17px;
+}
+.primary{background:#b99a50;color:#17271d}
+.secondary{background:#174b35;color:#fff4d1;border:1px solid #b99a50}
+.back{background:#d9c58e;color:#1b2b20;margin-bottom:12px}
+.surah-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#fffdf4;
+  color:#263b2c;
+  border:1px solid #c2a65e;
+  border-radius:11px;
+  padding:15px;
+  margin:9px 0;
+  cursor:pointer;
+  font-size:18px;
+}
+h2{text-align:center;color:#e8cf8b;font-size:27px}
+.options{display:grid;gap:13px;margin:25px 0}
+.option{
+  background:#174b35;
+  color:#fff0c5;
+  border:1px solid #c4a65c;
+  padding:20px;
+  font-size:22px;
+}
+.status{
+  text-align:center;
+  color:#f1d994;
+  margin:15px 0;
+  line-height:1.8;
+}
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
+  margin:15px 0;
+}
+.mushaf{
+  background:#fffdf3;
+  color:#20291f;
+  border:5px double #b99a50;
+  border-radius:5px;
+  padding:22px 18px;
+  margin:18px auto;
+  font-family:"Traditional Arabic",Tahoma,serif;
+  font-size:28px;
+  line-height:2.25;
+  text-align:justify;
+  direction:rtl;
+  overflow-wrap:break-word;
+}
+.mushaf-title{
+  color:#765b22;
+  text-align:center;
+  border-bottom:1px solid #c7ad6b;
+  padding-bottom:12px;
+  margin-bottom:16px;
+}
+.basmala{
+  display:block;
+  text-align:center;
+  color:#765b22;
+  font-size:29px;
+  margin:5px 0 15px;
+}
+.ayah-marker{
+  color:#99772d;
+  font-family:Tahoma,Arial,sans-serif;
+  font-size:17px;
+  white-space:nowrap;
+  padding:0 5px;
+}
+.audio-ayah{transition:background .2s}
+.audio-ayah.active{
+  background:#e9d48f;
+  color:#17271d;
+  border-radius:5px;
+}
+.tasmee-word{visibility:hidden}
+.tasmee-word.revealed{
+  visibility:visible;
+  color:#17683e;
+}
+.progress{
+  width:100%;
+  height:10px;
+  background:#344b3d;
+  border-radius:20px;
+  overflow:hidden;
+  margin:15px 0;
+}
+.progress-fill{
+  width:0;
+  height:100%;
+  background:#e2c36f;
+}
+@media(max-width:550px){
+  .mushaf{font-size:24px;padding:15px 10px;line-height:2.2}
+  header{font-size:25px}
+}
+</style>
+</head>
+
+<body>
+
+<header>القرآن الكريم</header>
+
+<main class="container">
+
+  <!-- الصفحة الرئيسية -->
+  <section id="home">
+    <input id="search" type="search" placeholder="بحث">
+    <div id="surahList"></div>
+  </section>
+
+  <!-- خيارات السورة -->
+  <section id="choices" class="hidden">
+    <button class="back" onclick="goHome()">رجوع</button>
+    <h2 id="selectedTitle"></h2>
+
+    <div class="options">
+      <button class="option" onclick="openTasmee()">التسميع</button>
+      <button class="option" onclick="openReading()">القراءة</button>
+      <button class="option" onclick="openReciters()">الاستماع</button>
+    </div>
+  </section>
+
+  <!-- القراءة -->
+  <section id="reading" class="hidden">
+    <button class="back" onclick="goChoices()">رجوع</button>
+    <div id="readingContent" class="mushaf"></div>
+  </section>
+
+  <!-- اختيار الشيخ -->
+  <section id="reciters" class="hidden">
+    <button class="back" onclick="goChoices()">رجوع</button>
+    <h2>اختيار القارئ</h2>
+
+    <select id="reciter">
+      <option value="ar.alafasy">مشاري العفاسي</option>
+      <option value="ar.abdurrahmaansudais">عبدالرحمن السديس</option>
+      <option value="ar.mahermuaiqly">ماهر المعيقلي</option>
+      <option value="ar.husary">محمود خليل الحصري</option>
+      <option value="ar.minshawi">محمد صديق المنشاوي</option>
+      <option value="ar.saoodshuraym">سعود الشريم</option>
+      <option value="ar.muhammadayyoub">محمد أيوب</option>
+      <option value="ar.ahmedajamy">أحمد العجمي</option>
+    </select>
+
+    <button class="primary" style="width:100%" onclick="loadListening()">
+      تحميل السورة
+    </button>
+  </section>
+
+  <!-- الاستماع -->
+  <section id="listening" class="hidden">
+    <button class="back" onclick="leaveListening()">رجوع</button>
+
+    <h2 id="listeningTitle"></h2>
+
+    <div id="audioStatus" class="status">
+      اختَر الشيخ وحمّل السورة.
+    </div>
+
+    <div class="controls">
+      <button class="primary" onclick="playAudio()">▶ تشغيل</button>
+      <button class="secondary" onclick="pauseAudio()">⏸ إيقاف مؤقت</button>
+      <button class="secondary" onclick="stopAudio()">■ إيقاف</button>
+    </div>
+
+    <div id="listeningContent" class="mushaf"></div>
+  </section>
+
+  <!-- التسميع -->
+  <section id="tasmee" class="hidden">
+    <button class="back" onclick="leaveTasmee()">رجوع</button>
+
+    <h2 id="tasmeeTitle"></h2>
+
+    <div id="tasmeeStatus" class="status">
+      اضغط بدء التسميع واسمح باستخدام الميكروفون.
+    </div>
+
+    <div class="progress">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" onclick="startTasmee()">بدء التسميع</button>
+      <button class="secondary" onclick="stopTasmee()">إيقاف</button>
+      <button class="secondary" onclick="resetTasmee()">إعادة من البداية</button>
+    </div>
+
+    <div id="tasmeeContent" class="mushaf"></div>
+  </section>
+
+</main>
+
+<script>
+const API="https://api.alquran.cloud/v1";
+
+let surahs=[];
+let selected=null;
+
+/* مشغل الصوت */
+let player=new Audio();
+let audioQueue=[];
+let audioPosition=0;
+let audioLoaded=false;
+let audioIsPlaying=false;
+let audioToken=0;
+
+/* التسميع */
+let recognition=null;
+let recognitionActive=false;
+let expectedWords=[];
+let wordElements=[];
+let wordPosition=0;
+let recognitionGeneration=0;
+
+const $=id=>document.getElementById(id);
+
+/* التنقل */
+function show(id){
+  ["home","choices","reading","reciters","listening","tasmee"]
+    .forEach(x=>$(x).classList.add("hidden"));
+
+  $(id).classList.remove("hidden");
+}
+
+async function api(url){
+  const response=await fetch(API+url);
+
+  if(!response.ok){
+    throw new Error("Network error");
+  }
+
+  const result=await response.json();
+
+  if(result.code!==200){
+    throw new Error("API error");
+  }
+
+  return result.data;
+}
+
+/* تطبيع البحث العربي */
+function cleanArabic(s){
+  return String(s||"")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g,"")
+    .replace(/\u0640/g,"")
+    .replace(/[أإآٱ]/g,"ا")
+    .replace(/ى/g,"ي")
+    .replace(/ة/g,"ه")
+    .replace(/[ؤئ]/g,"ء")
+    .replace(/[^\u0621-\u064A0-9a-z]/g,"")
+    .trim();
+}
+
+function editDistance(a,b){
+  const row=Array.from({length:b.length+1},(_,i)=>i);
+
+  for(let i=1;i<=a.length;i++){
+    let previous=row[0];
+    row[0]=i;
+
+    for(let j=1;j<=b.length;j++){
+      const old=row[j];
+
+      row[j]=Math.min(
+        row[j]+1,
+        row[j-1]+1,
+        previous+(a[i-1]===b[j-1]?0:1)
+      );
+
+      previous=old;
+    }
+  }
+
+  return row[b.length];
+}
+
+function similarSearch(a,b){
+  if(!a||!b)return false;
+  if(a.includes(b)||b.includes(a))return true;
+
+  const distance=editDistance(a,b);
+  const maxLength=Math.max(a.length,b.length);
+
+  if(maxLength<=4)return distance<=1;
+
+  return distance<=Math.max(1,Math.floor(maxLength*0.25));
+}
+
+/* تحميل السور */
+async function loadSurahs(){
+  try{
+    surahs=await api("/surah");
+    showSurahs(surahs);
+  }catch(error){
+    $("surahList").textContent="تعذر تحميل السور. تحقق من الإنترنت.";
+  }
+}
+
+function showSurahs(list){
+  $("surahList").innerHTML="";
+
+  list.forEach(s=>{
+    const item=document.createElement("div");
+    item.className="surah-item";
+
+    const name=document.createElement("span");
+    name.textContent=s.name;
+
+    const number=document.createElement("span");
+    number.textContent=s.number;
+
+    item.append(name,number);
+    item.onclick=()=>chooseSurah(s);
+
+    $("surahList").appendChild(item);
+  });
+}
+
+/* البحث */
+$("search").addEventListener("input",()=>{
+  const raw=$("search").value.trim();
+
+  if(!raw){
+    showSurahs(surahs);
+    return;
+  }
+
+  const q=cleanArabic(raw);
+
+  const results=surahs.filter(s=>{
+    const names=[
+      cleanArabic(s.name),
+      cleanArabic(s.englishName),
+      cleanArabic(s.englishNameTranslation)
+    ];
+
+    return names.some(name=>similarSearch(name,q)) ||
+      String(s.number)===q;
+  });
+
+  showSurahs(results);
+});
+
+/* اختيار السورة */
+function chooseSurah(s){
+  stopAudio();
+  stopTasmee();
+
+  selected=s;
+  $("selectedTitle").textContent=s.name;
+
+  show("choices");
+}
+
+function goHome(){
+  stopAudio();
+  stopTasmee();
+  selected=null;
+  show("home");
+}
+
+function goChoices(){
+  stopAudio();
+  stopTasmee();
+  show("choices");
+}
+
+/* عرض المصحف */
+function makeMarker(number){
+  const marker=document.createElement("span");
+  marker.className="ayah-marker";
+  marker.textContent=" ۞ "+number+" ";
+  return marker;
+}
+
+function renderMushaf(container,ayahs,mode){
+  container.innerHTML="";
+
+  const title=document.createElement("div");
+  title.className="mushaf-title";
+  title.textContent="سُورَةُ "+selected.name;
+  container.appendChild(title);
+
+  if(selected.number!==1&&selected.number!==9){
+    const basmala=document.createElement("span");
+    basmala.className="basmala";
+    basmala.textContent="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+    container.appendChild(basmala);
+  }
+
+  ayahs.forEach((ayah,index)=>{
+    const span=document.createElement("span");
+
+    span.className=mode==="audio"?"audio-ayah":"ayah";
+
+    if(mode==="audio"){
+      span.id="audioAyah"+index;
+    }
+
+    span.textContent=ayah.text;
+
+    container.appendChild(span);
+    container.appendChild(makeMarker(ayah.numberInSurah));
+  });
+}
+
+/* القراءة */
+async function openReading(){
+  show("reading");
+  $("readingContent").textContent="جاري تحميل السورة...";
+
+  try{
+    const data=await api(
+      "/surah/"+selected.number+"/quran-uthmani"
+    );
+
+    renderMushaf(
+      $("readingContent"),
+      data.ayahs,
+      "reading"
+    );
+
+  }catch(error){
+    $("readingContent").textContent=
+      "فشل تحميل السورة. تحقق من الإنترنت.";
+  }
+}
+
+/* اختيار الشيخ */
+function openReciters(){
+  show("reciters");
+}
+
+/* =========================
+   الاستماع - التشغيل المباشر
+========================= */
+
+async function loadListening(){
+  stopAudio();
+
+  const token=audioToken;
+  const edition=$("reciter").value;
+
+  show("listening");
+
+  $("listeningTitle").textContent=selected.name;
+  $("audioStatus").textContent="جاري تحميل السورة...";
+  $("listeningContent").textContent="";
+
+  try{
+    const textData=await api(
+      "/surah/"+selected.number+"/quran-uthmani"
+    );
+
+    const soundData=await api(
+      "/surah/"+selected.number+"/"+edition
+    );
+
+    if(token!==audioToken)return;
+
+    if(!textData.ayahs||!soundData.ayahs){
+      throw new Error("No audio data");
+    }
+
+    /*
+      نستخدم رابط صوت كل آية كما أعاده
+      API مباشرة، من غير fetch أو Blob.
+    */
+
+    audioQueue=soundData.ayahs.map(ayah=>({
+      url:ayah.audio,
+      number:ayah.numberInSurah
+    }));
+
+    if(audioQueue.length===0){
+      throw new Error("Empty audio");
+    }
+
+    renderMushaf(
+      $("listeningContent"),
+      textData.ayahs,
+      "audio"
+    );
+
+    audioPosition=0;
+    audioLoaded=true;
+    audioIsPlaying=false;
+
+    $("audioStatus").textContent=
+      "تم تحميل السورة. اضغط تشغيل للاستماع.";
+
+  }catch(error){
+    if(token!==audioToken)return;
+
+    audioLoaded=false;
+
+    $("audioStatus").textContent=
+      "تعذر تحميل تسجيل هذا الشيخ. جرّب قارئًا آخر أو تحقق من الإنترنت.";
+  }
+}
+
+/* تمييز الآية الحالية */
+function highlightAyah(index){
+  document.querySelectorAll(".audio-ayah.active")
+    .forEach(el=>el.classList.remove("active"));
+
+  const element=$("audioAyah"+index);
+
+  if(element){
+    element.classList.add("active");
+
+    element.scrollIntoView({
+      behavior:"smooth",
+      block:"center"
+    });
+  }
+}
+
+/* تشغيل الآية الحالية */
+async function playCurrentAyah(){
+  if(!audioLoaded||!audioQueue.length)return;
+
+  if(audioPosition>=audioQueue.length){
+    audioIsPlaying=false;
+    $("audioStatus").textContent="انتهت السورة.";
+    return;
+  }
+
+  const token=audioToken;
+  const current=audioQueue[audioPosition];
+
+  player.pause();
+  player.onended=null;
+  player.onerror=null;
+
+  player.src=current.url;
+
+  highlightAyah(audioPosition);
+
+  $("audioStatus").textContent=
+    "يتم الآن تشغيل الآية رقم "+current.number;
+
+  player.onended=()=>{
+    if(token!==audioToken)return;
+    if(!audioIsPlaying)return;
+
+    audioPosition++;
+
+    if(audioPosition<audioQueue.length){
+      playCurrentAyah();
+    }else{
+      audioIsPlaying=false;
+      $("audioStatus").textContent="انتهت السورة.";
+    }
+  };
+
+  player.onerror=()=>{
+    if(token!==audioToken)return;
+
+    audioIsPlaying=false;
+
+    $("audioStatus").textContent=
+      "تعذر تشغيل التسجيل. جرّب قارئًا آخر.";
+  };
+
+  try{
+    await player.play();
+  }catch(error){
+    if(token!==audioToken)return;
+
+    audioIsPlaying=false;
+
+    $("audioStatus").textContent=
+      "المتصفح لم يسمح بتشغيل الصوت. اضغط تشغيل مرة أخرى.";
+  }
+}
+
+/* زر التشغيل */
+function playAudio(){
+  if(!audioLoaded||audioQueue.length===0){
+    $("audioStatus").textContent=
+      "حمّل السورة أولًا، ثم اضغط تشغيل.";
+    return;
+  }
+
+  if(audioIsPlaying)return;
+
+  audioIsPlaying=true;
+
+  /*
+    لو الصوت متوقف مؤقتًا، نكمل نفس الآية.
+    لو انتهت الآية، onended ينتقل تلقائيًا للي بعدها.
+  */
+
+  if(player.src && player.paused &&
+     player.dataset.currentIndex===String(audioPosition)){
+
+    player.play().then(()=>{
+      $("audioStatus").textContent=
+        "يتم الآن تشغيل الآية رقم "+
+        audioQueue[audioPosition].number;
+    }).catch(()=>{
+      audioIsPlaying=false;
+      $("audioStatus").textContent=
+        "اضغط تشغيل مرة أخرى.";
+    });
+
+    return;
+  }
+
+  playCurrentAyah();
+}
+
+/* إيقاف مؤقت */
+function pauseAudio(){
+  if(!audioLoaded)return;
+
+  audioIsPlaying=false;
+  player.pause();
+
+  $("audioStatus").textContent="تم الإيقاف المؤقت.";
+}
+
+/* إيقاف كامل */
+function stopAudio(){
+  audioToken++;
+
+  audioIsPlaying=false;
+  audioLoaded=false;
+  audioPosition=0;
+  audioQueue=[];
+
+  player.pause();
+  player.onended=null;
+  player.onerror=null;
+  player.removeAttribute("src");
+  player.load();
+
+  player.dataset.currentIndex="";
+  $("audioStatus").textContent="تم إيقاف الصوت.";
+}
+
+function leaveListening(){
+  stopAudio();
+  goChoices();
+}
+
+/* =========================
+   التسميع
+========================= */
+
+function wordsOf(text){
+  return String(text||"")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+async function openTasmee(){
+  stopTasmee();
+  show("tasmee");
+
+  $("tasmeeTitle").textContent=selected.name;
+  $("tasmeeStatus").textContent="جاري تجهيز السورة...";
+  $("tasmeeContent").textContent="";
+
+  try{
+    const data=await api(
+      "/surah/"+selected.number+"/quran-uthmani"
+    );
+
+    buildTasmee(data.ayahs);
+
+    $("tasmeeStatus").textContent=
+      "اضغط بدء التسميع واسمح باستخدام الميكروفون.";
+
+  }catch(error){
+    $("tasmeeStatus").textContent="تعذر تحميل السورة.";
+  }
+}
+
+function buildTasmee(ayahs){
+  const container=$("tasmeeContent");
+
+  container.innerHTML="";
+  expectedWords=[];
+  wordElements=[];
+
+  const title=document.createElement("div");
+  title.className="mushaf-title";
+  title.textContent="سُورَةُ "+selected.name;
+
+  container.appendChild(title);
+
+  function addWords(text,number){
+    const verse=document.createElement("span");
+    verse.className="tasmee-ayah";
+
+    wordsOf(text).forEach(word=>{
+      const span=document.createElement("span");
+
+      span.className="tasmee-word";
+      span.textContent=word;
+
+      verse.appendChild(span);
+      verse.appendChild(document.createTextNode(" "));
+
+      expectedWords.push(cleanArabic(word));
+      wordElements.push(span);
+    });
+
+    container.appendChild(verse);
+
+    if(number!==null){
+      container.appendChild(makeMarker(number));
+    }
+  }
+
+  if(selected.number!==1&&selected.number!==9){
+    const basmala=document.createElement("span");
+    basmala.className="basmala";
+    basmala.textContent="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+
+    container.appendChild(basmala);
+
+    addWords(
+      "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      null
+    );
+  }
+
+  ayahs.forEach(a=>{
+    addWords(a.text,a.numberInSurah);
+  });
+
+  wordPosition=0;
+  updateProgress();
+}
+
+function updateProgress(){
+  const percent=expectedWords.length?
+    wordPosition/expectedWords.length*100:0;
+
+  $("progressFill").style.width=percent+"%";
+}
+
+function wordMatches(spoken,expected){
+  if(spoken===expected)return true;
+  if(!spoken||!expected)return false;
+  if(Math.min(spoken.length,expected.length)<=2)return false;
+
+  const distance=editDistance(spoken,expected);
+
+  return distance/
+    Math.max(spoken.length,expected.length)<=0.25;
+}
+
+function processSpokenText(text){
+  if(!recognitionActive)return;
+
+  const spoken=wordsOf(text);
+
+  for(const raw of spoken){
+    const word=cleanArabic(raw);
+
+    if(!word)continue;
+    if(wordPosition>=expectedWords.length)break;
+
+    const expected=expectedWords[wordPosition];
+
+    if(wordMatches(word,expected)){
+      wordElements[wordPosition].classList.add("revealed");
+
+      wordPosition++;
+      updateProgress();
+
+      $("tasmeeStatus").textContent=
+        "تم التعرف على "+wordPosition+
+        " من "+expectedWords.length+" كلمة";
+
+      if(wordPosition>=expectedWords.length){
+        stopTasmee();
+
+        $("tasmeeStatus").textContent=
+          "انتهيت من السورة. بارك الله فيك!";
+
+        return;
+      }
+
+    }else{
+      $("tasmeeStatus").textContent=
+        "الكلمة التالية: "+
+        (wordElements[wordPosition]?.textContent||"");
+    }
+  }
+}
+
+function startTasmee(){
+  if(recognitionActive)return;
+
+  const SpeechRecognition=
+    window.SpeechRecognition||
+    window.webkitSpeechRecognition;
+
+  if(!SpeechRecognition){
+    $("tasmeeStatus").textContent=
+      "التعرف على الصوت غير مدعوم هنا. جرّب Google Chrome.";
+    return;
+  }
+
+  if(!expectedWords.length){
+    $("tasmeeStatus").textContent=
+      "انتظر تحميل السورة أولًا.";
+    return;
+  }
+
+  if(wordPosition>=expectedWords.length){
+    $("tasmeeStatus").textContent=
+      "انتهيت بالفعل. اضغط إعادة من البداية.";
+    return;
+  }
+
+  recognitionActive=true;
+
+  const generation=++recognitionGeneration;
+
+  $("tasmeeStatus").textContent=
+    "الميكروفون يعمل. اقرأ بصوت واضح.";
+
+  startRecognitionInstance(
+    SpeechRecognition,
+    generation
+  );
+}
+
+function startRecognitionInstance(SpeechRecognition,generation){
+  if(!recognitionActive||
+     generation!==recognitionGeneration)return;
+
+  const rec=new SpeechRecognition();
+
+  recognition=rec;
+  rec.lang="ar-SA";
+  rec.continuous=true;
+  rec.interimResults=false;
+  rec.maxAlternatives=1;
+
+  rec.onresult=event=>{
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const result=event.results[i];
+
+      if(result.isFinal){
+        processSpokenText(result[0].transcript);
+      }
+    }
+  };
+
+  rec.onerror=event=>{
+    if(!recognitionActive)return;
+
+    if(event.error==="not-allowed"||
+       event.error==="service-not-allowed"){
+
+      recognitionActive=false;
+
+      $("tasmeeStatus").textContent=
+        "الميكروفون غير مسموح. فعّل إذن الميكروفون.";
+
+    }else if(event.error!=="no-speech"){
+      $("tasmeeStatus").textContent=
+        "حصل خطأ في التعرف على الصوت: "+event.error;
+    }
+  };
+
+  rec.onend=()=>{
+    if(!recognitionActive||
+       generation!==recognitionGeneration)return;
+
+    setTimeout(()=>{
+      if(recognitionActive&&
+         generation===recognitionGeneration){
+
+        startRecognitionInstance(
+          SpeechRecognition,
+          generation
+        );
+      }
+    },300);
+  };
+
+  try{
+    rec.start();
+  }catch(error){
+    recognitionActive=false;
+
+    $("tasmeeStatus").textContent=
+      "تعذر تشغيل الميكروفون.";
+  }
+}
+
+function stopTasmee(){
+  recognitionActive=false;
+  recognitionGeneration++;
+
+  if(recognition){
+    const old=recognition;
+    recognition=null;
+    old.onend=null;
+
+    try{
+      old.stop();
+    }catch(error){}
+  }
+}
+
+function resetTasmee(){
+  stopTasmee();
+
+  wordPosition=0;
+
+  wordElements.forEach(el=>{
+    el.classList.remove("revealed");
+  });
+
+  updateProgress();
+
+  $("tasmeeStatus").textContent=
+    "تمت إعادة التسميع من البداية. اضغط بدء التسميع.";
+}
+
+function leaveTasmee(){
+  stopTasmee();
+  goChoices();
+}
+
+/* تشغيل الموقع */
+loadSurahs();
+
+</script>
+</body>
+</html>
